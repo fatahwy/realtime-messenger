@@ -26,7 +26,7 @@ export default function ModalSearchUser() {
         setValidate(false)
     }, [isOpen])
 
-    const selectedValue: any = useMemo(() => list.items.find((d: any) => d.name === list.filterText), [list.filterText])
+    const selectedValue: any = useMemo(() => list.items.find((d: any) => d.name === list.filterText), [list.items, list.filterText])
 
     const handleStartChat = (onClose: () => void) => {
         setValidate(true);

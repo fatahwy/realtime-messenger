@@ -118,7 +118,7 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
                 </aside>
             )
         })
-    }, [JSON.stringify(optimisticMessages)])
+    }, [optimisticMessages, userId])
 
     return (
         <>
