@@ -1,14 +1,17 @@
-import { redirect } from 'next/navigation';
-import prisma from '../../libs/prismadb'
-import getSession from './getSession';
-import mongoose from 'mongoose';
+'use server'
 
-const getCurrentUser = async () => {
+import { redirect } from 'next/navigation';
+import mongoose from 'mongoose';
+import getSession from './getSession';
+import prisma from '../../libs/prismadb'
+import { pusherServer } from '../../libs/pusher';
+
+export const getCurrentUser = async () => {
     try {
         const session = await getSession();
 
         if (!session?.user?.email) {
-            return null;
+            redirect('/')
         }
 
         const currentUser = await prisma.user.findUnique({
@@ -18,16 +21,41 @@ const getCurrentUser = async () => {
         })
 
         if (!currentUser) {
-            return null;
+            redirect('/')
         }
 
         return currentUser;
     } catch (error: any) {
-        return null;
+        console.log({ error });
     }
+    redirect('/')
 }
 
-async function validateUser(id: string) {
+export async function updateUser(data: { image: string, name: string, userId?: string }) {
+    const currentUser = await getCurrentUser();
+
+    try {
+        if (currentUser.name !== data.name || currentUser.image !== data.image) {
+            const res = await prisma.user.update({
+                where: {
+                    id: currentUser.id
+                },
+                data
+            })
+
+            data.userId = currentUser.id;
+            await pusherServer.trigger('profiles', 'update', data)
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error)
+    }
+
+    return false;
+}
+
+export async function validateUser(id: string) {
     const session = await getSession();
 
     if (!session?.user?.email || !mongoose.isValidObjectId(id)) {
@@ -47,7 +75,7 @@ async function validateUser(id: string) {
     redirect('/chat')
 }
 
-async function getUsers() {
+export async function getUsers() {
     const session = await getSession();
 
     if (!session?.user?.email) {
@@ -71,10 +99,3 @@ async function getUsers() {
         return [];
     }
 }
-
-
-export default {
-    getCurrentUser,
-    validateUser,
-    getUsers,
-};

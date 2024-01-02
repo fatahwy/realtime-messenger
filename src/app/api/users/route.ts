@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import UserAction from "../../actions/UserAction";
 import prisma from '../../../libs/prismadb'
+import { getCurrentUser } from "@/app/actions/UserAction";
 
 export async function GET(request: Request, params: string) {
     try {
-        const currentUser = await UserAction.getCurrentUser();
+        const currentUser = await getCurrentUser();
         const { searchParams } = new URL(request.url)
         const q = searchParams.get('q') || ''
 

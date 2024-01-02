@@ -41,18 +41,18 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
     }, [JSON.stringify(optimisticMessages)]);
 
     useEffect(() => {
-        pusherClient.subscribe(conversation.id)
+        pusherClient.subscribe('messages')
 
         const messageHandler = (message: Message) => {
-            if (message.receiverId != userId) {
+            if (conversation.id === message.conversationId && message.receiverId != userId) {
                 addOptimisticMessage({ ...message })
             }
         }
 
-        pusherClient.bind('messages:new', messageHandler)
+        pusherClient.bind('new', messageHandler)
 
         return () => {
-            pusherClient.unsubscribe(conversation.id);
+            pusherClient.unsubscribe('messages');
             pusherClient.unbind('messages:new', messageHandler);
         }
     }, [conversation.id])
@@ -129,7 +129,7 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
                 <CldUploadButton
                     options={{ maxFiles: 1 }}
                     onUpload={handleUpload}
-                    uploadPreset='ysjdzopf'
+                    uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_PRESET}
                 >
                     <FaRegImage className="text-2xl text-default-400" />
                 </CldUploadButton>

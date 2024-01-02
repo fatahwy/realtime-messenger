@@ -1,15 +1,16 @@
 'use server'
 
-import UserAction from './UserAction';
+import { getCurrentUser, validateUser } from './UserAction';
 import prisma from '../../libs/prismadb'
 import { pusherServer } from '../../libs/pusher';
+import { composeId } from '../../libs/helper';
 
 export const sendMessage = async (idUser: string, message: string, image?: string) => {
-    const currentUser = await UserAction.getCurrentUser();
-    const userDest = await UserAction.validateUser(idUser);
+    const currentUser = await getCurrentUser();
+    const userDest = await validateUser(idUser);
 
     if (currentUser && userDest) {
-        const conversationId = [currentUser.id, userDest.id].sort().join('');
+        const conversationId = composeId(currentUser.id, userDest.id)
 
         const model = await prisma.message.create({
             data: {
@@ -21,13 +22,12 @@ export const sendMessage = async (idUser: string, message: string, image?: strin
             }
         })
 
-        await pusherServer.trigger(conversationId, 'messages:new', model)
-        await pusherServer.trigger([currentUser.id, userDest.id], 'lastMessage:update', model)
+        await pusherServer.trigger('messages', 'new', { ...model, sender: currentUser, receiver: userDest })
     }
 }
 
 export const listPeopleConversation = async () => {
-    const currentUser = await UserAction.getCurrentUser();
+    const currentUser = await getCurrentUser();
 
     if (currentUser) {
         try {
@@ -62,8 +62,8 @@ export const listPeopleConversation = async () => {
 }
 
 export const getDetailConversation = async (id: string) => {
-    const currentUser = await UserAction.getCurrentUser();
-    const userDest = await UserAction.validateUser(id);
+    const currentUser = await getCurrentUser();
+    const userDest = await validateUser(id);
 
     if (currentUser && userDest) {
         const conversations = await prisma.message.findMany({
