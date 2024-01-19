@@ -83,11 +83,15 @@ export default function ModalChangProfile() {
                     <ModalHeader>Profile</ModalHeader>
                     <ModalBody className="mx-auto items-center w-full gap-y-10">
                         <div className="group relative">
-                            <Avatar src={imgSrc || '/images/user-placeholder.png'} className="w-40 h-40 text-large"/>
+                            <Avatar src={imgSrc || '/images/user-placeholder.png'} className="w-40 h-40 text-large" />
 
-                            <div className=" bg-slate-500 text-white opacity-80 hidden group-hover:flex cursor-pointer font-medium h-full w-full absolute top-0 justify-center items-center rounded-full"  onClick={() => document.getElementById('fileInput')?.click()}>Change Profile</div>
-
-                            <input style={{ display: 'none' }} id='fileInput' type="file" name="file" accept="jpg, jpeg, png" onChange={handleFileChange} />
+                            {
+                                !isPending &&
+                                <>
+                                    <div className="bg-slate-500 text-white opacity-80 hidden group-hover:flex cursor-pointer font-medium h-full w-full absolute top-0 justify-center items-center rounded-full" onClick={() => document.getElementById('fileInput')?.click()}>Change Profile</div>
+                                    <input style={{ display: 'none' }} id='fileInput' type="file" name="file" accept="jpg, jpeg, png" onChange={handleFileChange} />
+                                </>
+                            }
                         </div>
 
                         <Input disabled={isPending} name="name" type="text" label="Name" value={newName} onInput={(e: any) => setNewName(e.target.value)} />

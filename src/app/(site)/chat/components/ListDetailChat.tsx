@@ -38,7 +38,7 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
 
     useEffect(() => {
         scrollToBottom();
-    }, [JSON.stringify(optimisticMessages)]);
+    }, [userId, optimisticMessages]);
 
     useEffect(() => {
         pusherClient.subscribe('messages')

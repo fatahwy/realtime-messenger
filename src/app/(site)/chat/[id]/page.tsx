@@ -18,7 +18,7 @@ async function ChatPage({ params: { id } }: any) {
         <WrapperBodyChat id={user.id}>
             <div className='flex flex-col h-screen'>
                 <Navbar>
-                    <div className='flex items-center gap-x-8'>
+                    <div className='flex items-center md:gap-x-8 px-3'>
                         <button className='md:hidden'>
                             <Link href='/chat'>
                                 <IoArrowBackSharp className='text-2xl' />
