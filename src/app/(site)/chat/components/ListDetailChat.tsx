@@ -1,50 +1,82 @@
 'use client'
 
-import { Chip, Textarea } from '@nextui-org/react'
+import { Chip, CircularProgress, Textarea } from '@nextui-org/react'
 import { Message } from '@prisma/client'
 import clsx from 'clsx'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { FaRegImage } from 'react-icons/fa6'
 import { IoSendSharp } from 'react-icons/io5'
 import { format } from 'date-fns'
 import { CldUploadButton } from 'next-cloudinary'
 import ImagePreview from './ImagePreview'
 import { pusherClient } from '../../../../libs/pusher'
-import { sendMessage } from '../../../actions/ConversationAction'
+import { getDetailConversation, sendMessage } from '../../../actions/ConversationAction'
+import { Virtuoso } from 'react-virtuoso'
 
 interface ListDetailChatProps {
     userId: string
-    conversation: { id: string, data: Message[] }
 }
 
-function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
+function ListDetailChat({ userId }: ListDetailChatProps) {
+    const [page, setPage] = useState(1)
+    const [conversationId, setConversationId] = useState('')
+    const [totalMessage, setTotalMessage] = useState(0)
     const [message, setMessage] = useState('')
-    const [optimisticMessages, setMessages] = useState(conversation.data)
+    const [optimisticMessages, setMessages] = useState<any>([])
+    const [firstItemIndex, setFirstItemIndex] = useState(100);
+
+    const perPage = 15
+    const [isLoading, startTransition] = useTransition();
+
+    const chatContainerRef: any = useRef(null);
+    const dataFetchedRef = useRef(false);
 
     const addOptimisticMessage = (newData: any) => {
         setMessages((state: Message[]) => [...state, newData])
+
+        if (chatContainerRef.current) {
+            chatContainerRef.current!.scrollToIndex({
+                index: totalMessage,
+                behavior: "instant"
+            })
+        }
     }
 
-    const chatContainerRef: any = useRef(null);
+    const getConversations = async () => {
+        startTransition(async () => {
+            const res: any = await getDetailConversation(userId, page, perPage);
 
-    const scrollToBottom = () => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTo({
-                top: chatContainerRef.current.scrollHeight,
-                behavior: 'smooth',
-            });
-        }
-    };
+            if (!conversationId) {
+                setConversationId(res.id)
+            }
+
+            setPage((curPage) => (curPage + 1))
+            setMessages((state: Message[]) => {
+                const newData = [...res.data, ...state];
+
+                setTotalMessage(res.total);
+                setFirstItemIndex(res.total - newData.length);
+                return newData.sort((a, b) => a.createdAt - b.createdAt)
+            })
+
+            setTimeout(() => {
+            }, 200)
+        })
+    }
 
     useEffect(() => {
-        scrollToBottom();
-    }, [userId, optimisticMessages]);
+        if (page === 1) {
+            if (dataFetchedRef.current) return;
+            dataFetchedRef.current = true;
+        }
+        getConversations();
+    }, [])
 
     useEffect(() => {
         pusherClient.subscribe('messages')
 
         const messageHandler = (message: Message) => {
-            if (conversation.id === message.conversationId && message.receiverId != userId) {
+            if (conversationId === message.conversationId && message.receiverId != userId) {
                 addOptimisticMessage({ ...message })
             }
         }
@@ -55,7 +87,7 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
             pusherClient.unsubscribe('messages');
             pusherClient.unbind('messages:new', messageHandler);
         }
-    }, [conversation.id])
+    }, [conversationId])
 
     const sendMsg = async () => {
         if (message) {
@@ -93,7 +125,9 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
         await sendMessage(userId, '', result?.info?.secure_url);
     }
 
-    const chats = useMemo(() => {
+    const itemContent = useCallback((index: number, rowData: any) => rowData, []);
+
+    const listChat = useMemo(() => {
         let date = ''
         return optimisticMessages.map((d: Message, i: number) => {
             const dateMsg = format(d.createdAt, 'dd MMM yyyy');
@@ -112,7 +146,7 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
                             {
                                 d.image ? <ImagePreview src={d.image} /> : <div className='text-medium'>{d.body}</div>
                             }
-                            <div className='font-extralight text-sm text-right'>{format(d.createdAt, 'HH:mm')}</div>
+                            {<div className='font-extralight text-sm text-right'>{format(d.createdAt, 'HH:mm')}</div>}
                         </div>
                     </div>
                 </aside>
@@ -122,8 +156,22 @@ function ListDetailChat({ userId, conversation }: ListDetailChatProps) {
 
     return (
         <>
-            <div className='p-3 flex-1 overflow-y-auto' ref={chatContainerRef}>
-                {chats}
+            <div id='galleryID' className={clsx('p-3 flex-1 overflow-y-auto')}>
+                {
+                    isLoading && page === 1 ?
+                        <div className='flex justify-center mb-5'>
+                            <CircularProgress aria-label="Loading..." />
+                        </div>
+                        :
+                        <Virtuoso
+                            ref={chatContainerRef}
+                            initialTopMostItemIndex={listChat.length - 1}
+                            firstItemIndex={Math.max(0, firstItemIndex)}
+                            itemContent={itemContent}
+                            data={listChat}
+                            startReached={getConversations}
+                        />
+                }
             </div>
             <div className='flex gap-x-4 px-2 pt-2 pb-5 dark:bg-slate-700'>
                 <CldUploadButton
