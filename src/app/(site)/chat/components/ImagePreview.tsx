@@ -8,6 +8,21 @@ type ImagePreviewProps = {
     galleryID?: string
 }
 
+const getImageDimensions = (src: string) => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+
+        img.onload = () => {
+            resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        };
+
+        img.onerror = (error) => {
+            reject(error);
+        };
+    });
+};
+
 export default function ImagePreview({ src, galleryID = 'galleryID' }: ImagePreviewProps) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -26,20 +41,16 @@ export default function ImagePreview({ src, galleryID = 'galleryID' }: ImagePrev
     }, []);
 
     useEffect(() => {
-        const image = new Image();
-
-        image.onload = () => {
-            setDimensions({
-                width: image.width,
-                height: image.height,
-            });
+        const loadImage = async () => {
+            try {
+                const dimensions: any = await getImageDimensions(src);
+                setDimensions(dimensions);
+            } catch (error) {
+                console.error("Error loading image:", error);
+            }
         };
 
-        image.src = src;
-
-        return () => {
-            image.onload = null;
-        };
+        loadImage();
     }, [src]);
 
     return (

@@ -9,15 +9,15 @@ import React, { useEffect, useState } from 'react'
 import { FaImage } from 'react-icons/fa6'
 
 interface AvatarProps {
-    url: string,
-    userId?: string,
+    url?: string,
+    userId: string,
     name?: string,
     message?: Message,
     isSelected?: boolean
 }
 
 function Avatar({ userId, url, name, message, isSelected }: AvatarProps) {
-    const [newUrl, setNewUrl] = useState(url);
+    const [newUrl, setNewUrl] = useState(url || process.env.NEXT_PUBLIC_DEFAULT_AVATAR!);
     const [newName, setNewName] = useState(name);
 
     useEffect(() => {
@@ -45,7 +45,7 @@ function Avatar({ userId, url, name, message, isSelected }: AvatarProps) {
     return (
         <div className={clsx('flex items-center gap-x-6 w-full px-4 md:px-3', isSelected && 'bg-gray-200 dark:bg-slate-600')}>
             <div className='relative rounded-full overflow-hidden h-9 w-9'>
-                <Image alt='Avatar' src={newUrl || '/images/user-placeholder.png'} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" fill />
+                <Image alt='Avatar' src={newUrl} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" fill />
             </div>
             <div className={clsx("flex-1 flex flex-col gap-2", message && 'pt-2')}>
                 <div className='flex justify-between'>

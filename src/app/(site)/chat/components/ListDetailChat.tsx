@@ -35,10 +35,12 @@ function ListDetailChat({ userId }: ListDetailChatProps) {
         setMessages((state: Message[]) => [...state, newData])
 
         if (chatContainerRef.current) {
-            chatContainerRef.current!.scrollToIndex({
-                index: totalMessage,
-                behavior: "instant"
-            })
+            setTimeout(() => {
+                chatContainerRef.current!.scrollToIndex({
+                    index: totalMessage,
+                    behavior: "instant"
+                })
+            }, 500)
         }
     }
 
@@ -58,9 +60,6 @@ function ListDetailChat({ userId }: ListDetailChatProps) {
                 setFirstItemIndex(res.total - newData.length);
                 return newData.sort((a, b) => a.createdAt - b.createdAt)
             })
-
-            setTimeout(() => {
-            }, 200)
         })
     }
 
@@ -156,7 +155,7 @@ function ListDetailChat({ userId }: ListDetailChatProps) {
 
     return (
         <>
-            <div id='galleryID' className={clsx('p-3 flex-1 overflow-y-auto')}>
+            <div id='galleryID' className={clsx('md:p-3 flex-1 overflow-y-auto')}>
                 {
                     isLoading && page === 1 ?
                         <div className='flex justify-center mb-5'>

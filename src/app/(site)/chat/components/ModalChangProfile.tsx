@@ -83,8 +83,7 @@ export default function ModalChangProfile() {
                     <ModalHeader>Profile</ModalHeader>
                     <ModalBody className="mx-auto items-center w-full gap-y-10">
                         <div className="group relative">
-                            <Avatar src={imgSrc || '/images/user-placeholder.png'} className="w-40 h-40 text-large" />
-
+                            <Avatar src={imgSrc || process.env.NEXT_PUBLIC_DEFAULT_AVATAR} className="w-40 h-40 text-large" />
                             {
                                 !isLoading &&
                                 <>

@@ -14,7 +14,7 @@ async function ChatPage({ params: { id } }: any) {
 
     return (
         <WrapperBodyChat id={user.id}>
-            <div className='flex flex-col h-screen'>
+            <div className='flex flex-col h-screen overflow-hidden'>
                 <Navbar>
                     <div className='flex items-center md:gap-x-8 px-3'>
                         <button className='md:hidden'>
@@ -22,7 +22,7 @@ async function ChatPage({ params: { id } }: any) {
                                 <IoArrowBackSharp className='text-2xl' />
                             </Link>
                         </button>
-                        <Avatar userId={user.id} name={user.name!} url={user.image || '/images/user-placeholder.png'} />
+                        <Avatar userId={user.id} name={user.name!} url={user.image!} />
                     </div>
                 </Navbar>
 
