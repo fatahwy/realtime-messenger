@@ -8,11 +8,9 @@ import WrapperBodyChat from '../components/WrapperBodyChat';
 import Avatar from '../components/Avatar';
 
 import { validateUser } from '../../../actions/UserAction';
-import { getDetailConversation } from '../../../actions/ConversationAction';
 
 async function ChatPage({ params: { id } }: any) {
     const user = await validateUser(id);
-    const conversations: any = await getDetailConversation(user.id);
 
     return (
         <WrapperBodyChat id={user.id}>
@@ -20,7 +18,7 @@ async function ChatPage({ params: { id } }: any) {
                 <Navbar>
                     <div className='flex items-center md:gap-x-8 px-3'>
                         <button className='md:hidden'>
-                            <Link href='/chat'>
+                            <Link prefetch href='/chat'>
                                 <IoArrowBackSharp className='text-2xl' />
                             </Link>
                         </button>
@@ -28,7 +26,7 @@ async function ChatPage({ params: { id } }: any) {
                     </div>
                 </Navbar>
 
-                <ListDetailChat userId={user.id} conversation={conversations} />
+                <ListDetailChat userId={user.id} />
             </div>
         </WrapperBodyChat>
     )

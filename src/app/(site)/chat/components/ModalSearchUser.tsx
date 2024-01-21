@@ -5,6 +5,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDi
 import { RiChatNewLine } from "react-icons/ri";
 import { useAsyncList } from "@react-stately/data";
 import { useRouter } from "next/navigation";
+import { getUsers } from "@/app/actions/UserAction";
 
 export default function ModalSearchUser() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -13,12 +14,9 @@ export default function ModalSearchUser() {
 
     let list = useAsyncList({
         async load({ signal, filterText }) {
-            let res = await fetch(`/api/users?q=${filterText}`, { signal });
-            let items = await res.json();
+            let items = await getUsers(filterText)
 
-            return {
-                items,
-            };
+            return { items };
         },
     });
 

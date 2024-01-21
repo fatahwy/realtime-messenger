@@ -61,42 +61,52 @@ export const listPeopleConversation = async () => {
     return []
 }
 
-export const getDetailConversation = async (id: string) => {
+export const getDetailConversation = async (id: string, page: number, size = 10) => {
     const currentUser = await getCurrentUser();
     const userDest = await validateUser(id);
 
     if (currentUser && userDest) {
-        const conversations = await prisma.message.findMany({
-            where: {
-                OR: [
-                    {
-                        AND: [
-                            {
-                                senderId: currentUser.id,
-                            },
-                            {
-                                receiverId: userDest.id,
-                            }
-                        ]
-                    },
-                    {
-                        AND: [
-                            {
-                                receiverId: currentUser.id,
-                            },
-                            {
-                                senderId: userDest.id,
-                            }
-                        ]
-                    },
-                ]
+        const condtions = {
+            OR: [
+                {
+                    AND: [
+                        {
+                            senderId: currentUser.id,
+                        },
+                        {
+                            receiverId: userDest.id,
+                        }
+                    ]
+                },
+                {
+                    AND: [
+                        {
+                            receiverId: currentUser.id,
+                        },
+                        {
+                            senderId: userDest.id,
+                        }
+                    ]
+                },
+            ]
+        };
 
+        const conversations = await prisma.message.findMany({
+            where: condtions,
+            orderBy: {
+                createdAt: 'desc'
             },
-            take: 100
+            skip: page > 1 ? size * (page - 1) : 0,
+            take: size
+        })
+
+        const conversationsTotal = await prisma.message.count({
+            where: condtions,
         })
 
         return {
             id: [currentUser.id, userDest.id].sort().join(''),
+            total: conversationsTotal,
             data: conversations,
         }
     }

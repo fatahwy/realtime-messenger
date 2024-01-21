@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import clsx from 'clsx';
 import Link from 'next/link';
 import { Message, User } from '@prisma/client';
 
@@ -59,7 +58,7 @@ export default function ListPeople({ data, userIdLogin, userIdDestination }: Lis
             const userDest = (d.senderId === userIdLogin ? d.receiver : d.sender) as User;
 
             return (
-                <Link key={i} href={`/chat/${userDest.id}`}>
+                <Link key={i} prefetch href={`/chat/${userDest.id}`}>
                     <Avatar userId={userDest.id} url={userDest.image!} name={userDest.name!} message={d} isSelected={userDest.id == userIdDestination}  />
                 </Link>
             )

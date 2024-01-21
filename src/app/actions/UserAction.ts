@@ -75,7 +75,7 @@ export async function validateUser(id: string) {
     redirect('/chat')
 }
 
-export async function getUsers() {
+export async function getUsers(q = '') {
     const session = await getSession();
 
     if (!session?.user?.email) {
@@ -88,9 +88,27 @@ export async function getUsers() {
                 createdAt: 'desc'
             },
             where: {
-                NOT: {
-                    email: session.user.email
-                }
+                AND: [
+                    {
+                        OR: [
+                            {
+                                email: {
+                                    contains: q
+                                }
+                            },
+                            {
+                                name: {
+                                    contains: q
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        NOT: {
+                            email: session.user.email
+                        },
+                    }
+                ],
             }
         })
 

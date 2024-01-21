@@ -13,7 +13,7 @@ export default function ModalChangProfile() {
     const [file, setFile] = useState(null);
     const [newName, setNewName] = useState('');
     const [imgSrc, setImgSrc] = useState('');
-    let [isPending, startTransition] = useTransition();
+    const [isLoading, startTransition] = useTransition();
 
     const handleFileChange = (event: any) => {
         setFile(event.target.files[0]);
@@ -86,7 +86,7 @@ export default function ModalChangProfile() {
                             <Avatar src={imgSrc || '/images/user-placeholder.png'} className="w-40 h-40 text-large" />
 
                             {
-                                !isPending &&
+                                !isLoading &&
                                 <>
                                     <div className="bg-slate-500 text-white opacity-80 hidden group-hover:flex cursor-pointer font-medium h-full w-full absolute top-0 justify-center items-center rounded-full" onClick={() => document.getElementById('fileInput')?.click()}>Change Profile</div>
                                     <input style={{ display: 'none' }} id='fileInput' type="file" name="file" accept="jpg, jpeg, png" onChange={handleFileChange} />
@@ -94,13 +94,13 @@ export default function ModalChangProfile() {
                             }
                         </div>
 
-                        <Input disabled={isPending} name="name" type="text" label="Name" value={newName} onInput={(e: any) => setNewName(e.target.value)} />
+                        <Input disabled={isLoading} name="name" type="text" label="Name" value={newName} onInput={(e: any) => setNewName(e.target.value)} />
                     </ModalBody>
                     <ModalFooter>
-                        <Button isLoading={isPending} color="danger" variant="light" onClick={toggle}>
+                        <Button isLoading={isLoading} color="danger" variant="light" onClick={toggle}>
                             Close
                         </Button>
-                        <Button isLoading={isPending} type="submit" color="primary">
+                        <Button isLoading={isLoading} type="submit" color="primary">
                             Update
                         </Button>
                     </ModalFooter>

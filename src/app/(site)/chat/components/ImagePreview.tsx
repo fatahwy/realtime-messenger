@@ -1,24 +1,57 @@
-import React from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, useDisclosure, Image } from "@nextui-org/react";
+import React, { useEffect, useState } from 'react';
+import NextImage from 'next/image';
+import PhotoSwipeLightbox from 'photoswipe/lightbox';
+import 'photoswipe/style.css';
 
 type ImagePreviewProps = {
-    src:string
+    src: string
+    galleryID?: string
 }
 
-export default function ImagePreview({ src }: ImagePreviewProps) {
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+export default function ImagePreview({ src, galleryID = 'galleryID' }: ImagePreviewProps) {
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+        let lightbox = new PhotoSwipeLightbox({
+            gallery: `#${galleryID}`,
+            children: 'a',
+            showHideAnimationType: 'fade',
+            pswpModule: () => import('photoswipe'),
+        });
+        lightbox.init();
+
+        return () => {
+            lightbox.destroy();
+        };
+    }, []);
+
+    useEffect(() => {
+        const image = new Image();
+
+        image.onload = () => {
+            setDimensions({
+                width: image.width,
+                height: image.height,
+            });
+        };
+
+        image.src = src;
+
+        return () => {
+            image.onload = null;
+        };
+    }, [src]);
 
     return (
-        <>
-            <Image className="hover:cursor-pointer" alt='Image' onClick={onOpen} src={src} width={120} />
-            <Modal size="5xl" isOpen={isOpen} onOpenChange={onOpenChange}>
-                <ModalContent>
-                    <ModalHeader></ModalHeader>
-                    <ModalBody className="items-center justify-center">
-                        <Image alt="preview" src={src}/>
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
-        </>
+        <a
+            key={galleryID + '-' + src}
+            href={src}
+            data-pswp-width={dimensions.width}
+            data-pswp-height={dimensions.height}
+            target="_blank"
+            rel="noreferrer"
+        >
+            <NextImage alt='upload-image' src={src} width={dimensions.width} height={dimensions.height} />
+        </a>
     );
 }
